@@ -3,18 +3,18 @@ from scrapy.utils.response import open_in_browser
 
 """
 TODO
-Category Name   - Digital Data
-1. Travel       -   True
+Category Name   - Digital Data  -   Link Collection
+1. Travel       -   True        -   Done
 2. News         -   False
-3. Capital      -   True
+3. Capital      -   True        -   Done
 4. Arts         -   False   - HTML data in response to ajax request
 5. Sport        -   False   - //article//a[span[contains(@class, 'title-text')]]
-6. Culture      -   True
+6. Culture      -   True        -   Done
 7. Weather      -   False   - //a[h3[contains(@class, 'title')]]
-8. Autos        -   True
+8. Autos        -   True        -   Done
 9. Food         -   False
-10. Future      -   True
-11. Earth       -   False
+10. Future      -   True        -   Done
+11. Earth       -   True        -   Not Good
 """
 
 
@@ -26,7 +26,9 @@ class NewsSpider(scrapy.Spider):
         and forward it to parse_categories() function
 
         parse_categories() will parse categories page and gets
-        all article link and forward it to parse_article() function
+        all article link and forward it to parse_article() function.
+        It also detects if there are more than one page then it follow
+        that page and pass it to parse_categories()
 
         parse_article() will parse the article page and extract
         article title, article published/last updated date, article body
@@ -37,19 +39,32 @@ class NewsSpider(scrapy.Spider):
     start_urls = ['https://www.bbc.com']
 
     def parse(self, response):
-        categories_links = response.css("#orb-footer div.orb-footer-primary-links")
-        categories_links = categories_links.css("ul li a::attr(href)").extract()
+        categories_links = response.xpath("//div[@id='orb-footer']//div[@class='orb-footer-primary-links']//ul//li//a/@href").extract()
 
         for link in categories_links:
-            yield response.follow(link, callback=self.parse_categories)
+            #yield {'link':"{url}{{page_no}}".format(url=link)}
+            yield response.follow(link, callback=self.parse_categories,
+                                  meta={
+                                        'follow_next':True,
+                                        'url':"{url}{{page_no}}".format(url=link)
+                                        }
+                                 )
     
 
     def parse_categories(self, response):
-        article_links = response.xpath("//a[h3[@class='promo-unit-title']]/@href").extract()
-        most_popular_items = response.xpath("//a[@class='most-popular-item-lining']/@href").extract()
-        article_links = article_links + most_popular_items
-        for link in article_links:
-            yield {'link': link}
+        if b"itemsPerPage" in response.body:
+            url = response.meta['url']
+            iterable = []
+            if response.meta['follow_next']:
+                iterable = range(2, 11)
+            
+            article_links = response.xpath("//a[h3[@class='promo-unit-title'] and contains(@data-cs-id, 'story-promo-link')]/@href").extract()
+            for link in article_links:
+                yield {'link': link}
+            
+            for i in iterable:
+                yield response.follow(url.format(page_no=i), callback=self.parse_categories,
+                                        meta={'follow_next':False, 'url':url})
             # yield response.follow(link, callback=self.parse_article)
 
 
