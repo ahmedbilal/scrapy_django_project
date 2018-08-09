@@ -16,11 +16,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from article_api.views import *
+from rest_framework.documentation import include_docs_urls
+
 urlpatterns = [
-    path('', get_articles),
-    path('authors', get_authors),
-    path('categories', get_categories),
+    # path('', index),
+
+    path('articles', get_articles, name='get_articles'),
+    path('articles/by/<str:author>', get_articles_by_author, name='get_articles_by_author'),
+    path('articles/of/<str:category>', get_articles_by_category, name='get_articles_by_category'),
+    path('articles/on/<str:date>', get_articles_by_date, name='get_articles_by_date'),
+    path('articles/with/<str:title>', get_articles_by_title, name='get_articles_by_title'),
+
+    path('authors', get_authors, name='get_authors'),
+    path('categories', get_categories, name='get_categories'),
+
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls'))
+    path('api-auth/', include('rest_framework.urls')),
+    path('docs/', include_docs_urls(title='BBC Articles API'))
 
 ]

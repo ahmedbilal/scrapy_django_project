@@ -6,6 +6,10 @@ import django
 os.environ["DJANGO_SETTINGS_MODULE"] = 'web.settings'
 django.setup()
 
+import requests
+
+from urllib.parse import urljoin
+
 from article_api.models import Article, Author, Category
 
 import scrapy
@@ -17,16 +21,16 @@ from w3lib.html import remove_tags, replace_escape_chars, replace_tags
 TODO
 Category Name   - Digital Data  -   Link Collection -   Data Extraction
 1. Travel       -   True        -   Done            -   Done
-2. News         -   False       -   Not Done        -   Done
+2. News         -   False       -   Done (Only Home)-   Done
 3. Capital      -   True        -   Done            -   Done
-4. Arts         -   False       -   Not Done                                HTML data in response to ajax request
-5. Sport        -   False       -   Not Done        -   Done
+4. Arts         -   False       -   Done            -   Not Done (some flaws) //*[div[@class='text--prose'] or h2]//*[not(descendant::blockquote) and not(ancestor-or-self::blockquote)]/text()
+5. Sport        -   False       -   Done (Only Home)-   Done
 6. Culture      -   True        -   Done            -   Done
 7. Weather      -   False       -   Done            -   Done
 8. Autos        -   True        -   Done            -   Done
-9. Food         -   False       -   Not Done
+9. Food         --------------------------------------------------
 10. Future      -   True        -   Done            -   Done
-11. Earth       -   True        -   Not Good
+11. Earth       -   True        -   Done            -   Done
 """
 Author.objects.all().delete()
 Category.objects.all().delete()
@@ -35,6 +39,10 @@ Article.objects.all().delete()
 def get_category(response, link):
     return response.urljoin(link).split("/")[3]
 
+def add_slash_if_not(url):
+    if url[-1] != '/':
+        return url + '/'
+    return url
 class NewsSpider(scrapy.Spider):
     """
         parse() will parse the main homepage and gets categories link
@@ -57,27 +65,29 @@ class NewsSpider(scrapy.Spider):
         categories_links = response.xpath("//div[@id='orb-footer']//div[@class='orb-footer-primary-links']//ul//li//a/@href").extract()
 
         for link in categories_links:
-            #yield {'link':link}
-            yield {'link':link}
-            yield response.follow(link, callback=self.parse_categories,
+            final_url = requests.request('HEAD', response.urljoin(link)).url
+            # yield {'link':link}
+            yield response.follow(final_url, callback=self.parse_categories,
                                   meta={
                                         'follow_next':True,
-                                        'url':"{url}{{page_no}}".format(url=link),
                                     }
                                  )
     
 
     def parse_categories(self, response):
+        url = urljoin(add_slash_if_not(response.url), '{page_no}')
+        # yield {'link':response.url, 'url':url}
+        # return 1
         article_links = []
         if b"itemsPerPage" in response.body:
-            url = response.meta['url']
             iterable = []
             if response.meta['follow_next']:
-                iterable = range(2, 11)
+                iterable = range(2, 6)
             
             article_links = response.xpath("//a[h3[@class='promo-unit-title'] and contains(@data-cs-id, 'story-promo-link')]/@href").extract()
             
             for i in iterable:
+                # yield {'next':url.format(page_no=i)}
                 yield response.follow(url.format(page_no=i), callback=self.parse_categories,
                                         meta={
                                                 'follow_next':False,
@@ -87,14 +97,32 @@ class NewsSpider(scrapy.Spider):
         
         elif response.url == 'https://www.bbc.com/weather':
             article_links = response.xpath("//a[h3[contains(@class, 'title')]]/@href").extract()
-
         elif response.url == 'https://www.bbc.com/sport':
             article_links = response.xpath("//article//a[span[contains(@class, 'title-text')]]/@href").extract()
+        elif response.url == 'https://www.bbc.com/news':
+            article_links = response.xpath("//a[contains(@class,'gs-c-promo-heading') and contains(@href, '/news/')]/@href").extract()
+        # elif response.url == 'https://www.bbc.co.uk/arts/':
+        #     url = response.meta['url']
+        #     iterable = []
+        #     if response.meta['follow_next']:
+        #         iterable = range(2, 11)
+            
+        #     article_links = response.xpath("//a[count(div) > 1 and count(span) = 0]/@href").extract()
+
+            # for i in iterable:
+            #     yield response.follow(url.format(page_no=i), callback=self.parse_categories,
+            #                             meta={
+            #                                     'follow_next':False,
+            #                                     'url':,
+            #                                 }
+            #                             )
+
         else:
             print("Meow Meow", response.url)
 
         for link in article_links:
-                yield response.follow(link, callback=self.parse_article, meta={'category':get_category(response, link)})
+            yield {'link':link}
+            yield response.follow(link, callback=self.parse_article, meta={'category':get_category(response, link)})
 
     def parse_article(self, response):
         article_title = ''
@@ -102,7 +130,8 @@ class NewsSpider(scrapy.Spider):
         article_date = ''
         article_body = ''
         article_category = response.meta['category']
-        if article_category in ['travel', 'capital', 'culture', 'autos', 'future']:
+        if article_category in ['travel', 'capital', 'culture', 'autos', 'future', 'earth']:
+            # pass
             article_body = " ".join(response.xpath("//div[@class='body-content']//p[not(@class) and not(ancestor::blockquote)]/text()").extract())
             #article_body = replace_escape_chars(remove_tags(article_body))
             
@@ -116,8 +145,9 @@ class NewsSpider(scrapy.Spider):
             article_date = response.xpath("//span[contains(@class, 'header__duration')]/b/text()").extract_first()
 
         elif article_category == 'news':
-            article_body = " ".join(response.xpath("//div[@property='articleBody']/p/text()").extract())
+            article_body = " ".join(response.xpath("//div[@property='articleBody']//*[self::p or self::h2]/descendant-or-self::*/text()").extract())
             article_title = response.xpath("//div[@class='story-body']/h1[@class='story-body__h1']/text()").extract_first()
+            article_author = response.xpath("//span[@class='byline__name']/text()").extract_first()
             article_date = response.xpath("//div[contains(@class, 'date') and ancestor::div[@class='story-body']]/@data-datetime").extract_first()
 
         elif article_category == 'sport':
@@ -125,11 +155,15 @@ class NewsSpider(scrapy.Spider):
             article_title = response.xpath("//article/h1[contains(@class, 'story-headline')]/text()").extract_first()
             article_date = response.xpath("//div[@class='story-info__list']//time/text()").extract_first()
 
+        else:
+            print("Unknown category", article_category)
+        if article_author:
+            article_author = article_author.replace("By ", "")
         Article.objects.abk_insert(article_title, article_category, article_author, article_date, article_body)
-        yield {
-                    'title': article_title,
-                    'body': article_body,
-                    'date': article_date,
-                    'author': article_author,
-                    'category': article_category
-            }
+        # yield {
+        #             'title': article_title,
+        #             'body': article_body,
+        #             'date': article_date,
+        #             'author': article_author,
+        #             'category': article_category
+        #     }
