@@ -7,20 +7,25 @@
 
 import sys
 import os
-from urllib.parse import urljoin
+from os.path import (dirname, abspath)
 
+from urllib.parse import urljoin
 import django
 import requests
 import scrapy
+
+PROJECT_ROOT = dirname(dirname(dirname(dirname(abspath(__file__)))))
+
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "web"))
+os.environ["DJANGO_SETTINGS_MODULE"] = 'web.settings'
+django.setup()
+
 
 # from scrapy.utils.response import open_in_browser
 # from w3lib.html import remove_tags, replace_escape_chars, replace_tags
 
 from article_api.models import Article, Author, Category
 
-sys.path.insert(0, '../../../web')
-os.environ["DJANGO_SETTINGS_MODULE"] = 'web.settings'
-django.setup()
 
 
 
@@ -221,6 +226,8 @@ class NewsSpider(scrapy.Spider):
             article_author = article_author.replace("By ", "")
         Article.objects.abk_insert(article_title, article_category, article_author,
                                    article_date, article_body)
+
+        # uncomment the following line if you want to save parsed articles in a file
         # yield {
         #             'title': article_title,
         #             'body': article_body,
