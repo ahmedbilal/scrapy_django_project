@@ -1,71 +1,44 @@
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from article_api.serializers import *
-from django.shortcuts import render
+from article_api.serializers import ArticleSerializer, AuthorSerializer, CategorySerializer
+from .models import Article, Author, Category
+from rest_framework.views import APIView
 
 
-def index(request):
-    return render(request, 'index.html')
+class ArticleList(APIView):
+    _filter = "all"
 
+    def get(self, request, author=None, category=None, date=None, title=None):
+        articles = Article.objects
+        if self._filter == "all":
+            articles = articles.all()
 
-@api_view(['GET'])
-def get_articles(request):
-    """Return all articles"""
-    if request.method == 'GET':
-        articles = Article.objects.all()
+        elif self._filter == "by_author_name":
+            articles = articles.filter(author__name__icontains=author)
+
+        elif self._filter == "by_category_name":
+            articles = articles.filter(category__name__exact=category)
+
+        elif self._filter == "by_date":
+            articles = articles.filter(date__exact=date)
+
+        elif self._filter == "by_title":
+            articles = articles.filter(title__icontains=title)
+
         serializer = ArticleSerializer(articles, many=True)
         return Response(serializer.data)
 
 
-@api_view(['GET'])
-def get_articles_by_author(request, author):
-    """Retiurn all articles by {author_name}"""
-    if request.method == 'GET':
-        articles = Article.objects.filter(author__name__icontains=author)
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data)
-
-
-@api_view(['GET'])
-def get_authors(request):
-    """Return all authors"""
-    if request.method == 'GET':
+class AuthorList(APIView):
+    def get(self, request):
         authors = Author.objects.all()
         serializer = AuthorSerializer(authors, many=True)
         return Response(serializer.data)
 
 
-@api_view(['GET'])
-def get_categories(request):
-    """Return all news categories"""
-    if request.method == 'GET':
+class CategoryList(APIView):
+    def get(self, request):
         categories = Category.objects.all()
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
 
 
-@api_view(['GET'])
-def get_articles_by_category(request, category):
-    """Return all articles of {category_name} category"""
-    if request.method == 'GET':
-        articles = Article.objects.filter(category__name__exact=category)
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data)
-
-
-@api_view(['GET'])
-def get_articles_by_date(reqeust, date):
-    """Return all articles published on {date}"""
-    if reqeust.method == 'GET':
-        articles = Article.objects.filter(date__exact=date)
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data)
-
-
-@api_view(['GET'])
-def get_articles_by_title(request, title):
-    """Return all articles whose title contain {title}"""
-    if request.method == 'GET':
-        articles = Article.objects.filter(title__icontains=title)
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data)

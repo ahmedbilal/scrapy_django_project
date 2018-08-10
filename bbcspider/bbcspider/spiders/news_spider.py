@@ -7,19 +7,26 @@
 
 import sys
 import os
-from urllib.parse import urljoin
+from os.path import (dirname, abspath)
 
+from urllib.parse import urljoin
 import django
 import requests
 import scrapy
 
-# from scrapy.utils.response import open_in_browser
-# from w3lib.html import remove_tags, replace_escape_chars, replace_tags
-sys.path.insert(0, '/home/bilal/Desktop/week3/scrapy_django_project/web')
+PROJECT_ROOT = dirname(dirname(dirname(dirname(abspath(__file__)))))
+
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "web"))
 os.environ["DJANGO_SETTINGS_MODULE"] = 'web.settings'
 django.setup()
 
+
+# from scrapy.utils.response import open_in_browser
+# from w3lib.html import remove_tags, replace_escape_chars, replace_tags
+
 from article_api.models import Article, Author, Category
+
+
 
 
 """TODO
@@ -141,19 +148,6 @@ class NewsSpider(scrapy.Spider):
             article_links = response.xpath("""//a[contains(@class,'gs-c-promo-heading')
                                                   and
                                                   contains(@href, '/news/')]/@href""").extract()
-        # elif response.url == 'https://www.bbc.co.uk/arts/':
-        #     url = response.meta['url']
-        #     iterable = []
-        #     if response.meta['follow_next']:
-        #         iterable = range(2, 11)
-        #     article_links = response.xpath("//a[count(div) > 1 and count(span) = 0]/@href").extract()
-            # for i in iterable:
-            #     yield response.follow(url.format(page_no=i), callback=self.parse_categories,
-            #                             meta={
-            #                                     'follow_next':False,
-            #                                     'url':,
-            #                                 }
-            #                             )
 
         else:
             print("Meow Meow", response.url)
@@ -232,6 +226,8 @@ class NewsSpider(scrapy.Spider):
             article_author = article_author.replace("By ", "")
         Article.objects.abk_insert(article_title, article_category, article_author,
                                    article_date, article_body)
+
+        # uncomment the following line if you want to save parsed articles in a file
         # yield {
         #             'title': article_title,
         #             'body': article_body,
