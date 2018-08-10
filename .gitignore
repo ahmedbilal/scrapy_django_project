@@ -1,0 +1,5 @@
+*.pyc
+*.jl
+bbcspider/output.txt
+bbcspider/news.jl
+bbcspider/news.json
