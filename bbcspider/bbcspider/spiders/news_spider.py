@@ -15,11 +15,13 @@ import scrapy
 
 # from scrapy.utils.response import open_in_browser
 # from w3lib.html import remove_tags, replace_escape_chars, replace_tags
-sys.path.insert(0, '/home/bilal/Desktop/week3/scrapy_django_project/web')
+
+from article_api.models import Article, Author, Category
+
+sys.path.insert(0, '../../../web')
 os.environ["DJANGO_SETTINGS_MODULE"] = 'web.settings'
 django.setup()
 
-from article_api.models import Article, Author, Category
 
 
 """TODO
@@ -141,19 +143,6 @@ class NewsSpider(scrapy.Spider):
             article_links = response.xpath("""//a[contains(@class,'gs-c-promo-heading')
                                                   and
                                                   contains(@href, '/news/')]/@href""").extract()
-        # elif response.url == 'https://www.bbc.co.uk/arts/':
-        #     url = response.meta['url']
-        #     iterable = []
-        #     if response.meta['follow_next']:
-        #         iterable = range(2, 11)
-        #     article_links = response.xpath("//a[count(div) > 1 and count(span) = 0]/@href").extract()
-            # for i in iterable:
-            #     yield response.follow(url.format(page_no=i), callback=self.parse_categories,
-            #                             meta={
-            #                                     'follow_next':False,
-            #                                     'url':,
-            #                                 }
-            #                             )
 
         else:
             print("Meow Meow", response.url)
