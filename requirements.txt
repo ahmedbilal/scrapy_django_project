@@ -1,0 +1,6 @@
+scrapy
+django
+requests
+djangorestframework
+markdown
+django-filter

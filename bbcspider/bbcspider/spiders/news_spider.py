@@ -15,7 +15,7 @@ import requests
 import scrapy
 
 PROJECT_ROOT = dirname(dirname(dirname(dirname(abspath(__file__)))))
-
+MAX_PAGES = 5
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "web"))
 os.environ["DJANGO_SETTINGS_MODULE"] = 'web.settings'
 django.setup()
@@ -117,7 +117,7 @@ class NewsSpider(scrapy.Spider):
         if b"itemsPerPage" in response.body:
             iterable = []
             if response.meta['follow_next']:
-                iterable = range(2, 6)
+                iterable = range(2, MAX_PAGES + 1)
 
             article_links = response.xpath("""//a[h3[@class='promo-unit-title']
                                                   and 
