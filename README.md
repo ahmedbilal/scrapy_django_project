@@ -23,16 +23,62 @@ After parsing is done, all these articles are inserted in our database one by on
 2. [Django](https://www.djangoproject.com/)
 3. [Requests](http://docs.python-requests.org/en/master/)
 4. [Django Rest Framework](http://www.django-rest-framework.org/)
+5. [Markdown](https://pypi.org/project/Markdown/)
 
 ## Installation
 The easiest way is to clone/download the repository. Run the following commands on your terminal to clone the repository.
 ```bash
-   git clone https://github.com/ahmedbilal/scrapy_django_project.git
+git clone https://github.com/ahmedbilal/scrapy_django_project.git
 ```
 ```bash
-   cd scrapy_django_project
+cd scrapy_django_project
 ```
 ```bash
-   pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 and you are **done**
+
+## Usage
+To run the spider for crawling BBC's website. Enter the following commands on your terminal.
+```bash
+cd bbcspider
+```
+```bash
+scrapy run news_spider
+```
+After the running above commands, your database would be filled with BBC's articles. To test the API enter the following commands on your terminal.
+```bash
+cd ../web
+```
+```bash
+python manage.py runserver
+```
+The website should be up and running at [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+
+## API
+To read about services we provide through our API visit [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+
+We provide the following services through our website
+1. All Scrapped Articles @ **/articles**
+2. All Authors of scrapped articles **/authors**
+3. All Categories of scrapped articles **/categories**
+4. Articles by a particular author **/articles/by/{author}**
+5. Articles of a particular category **/articles/of/{category}**
+6. Articles published on a particular date **/articles/on/{date}**
+7. Articles having a particular title **/articles/with/{title}**
+
+### Examples
+1. [All Scraped Articles](http://127.0.0.1:8000/articles)
+2. [All Author whom articles we scrapped](http://127.0.0.1:8000/authors)
+3. [All Categories whome articles we scrapped](http://127.0.0.1:8000/categories)
+3. [All Articles by person whose name contain Stephan](http://127.0.0.1:8000/articles/by/Stephen)
+4. [All Articles of Earth Category](http://127.0.0.1:8000/articles/of/earth)
+5. [All Articles published on 14 August 2018](http://127.0.0.1:8000/articles/on/14%20August%202018)
+6. [All Articles having China in their title](http://127.0.0.1:8000/articles/with/china)
+
+## Contribution
+I am happy to incorporate any contribution in this project. Just make sure your code is formatted according to PEP8 conventions.
+
+
+## Some Useful Links
+1. [PEP8](http://pep8.org)
