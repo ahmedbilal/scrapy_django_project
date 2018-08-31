@@ -20,40 +20,33 @@ sys.path.insert(0, os.path.join(PROJECT_ROOT, "web"))
 os.environ["DJANGO_SETTINGS_MODULE"] = 'web.settings'
 django.setup()
 
-
-# from scrapy.utils.response import open_in_browser
-# from w3lib.html import remove_tags, replace_escape_chars, replace_tags
-
 from article_api.models import Article, Author, Category
 
 
-
-
-"""TODO
-Category Name   - Digital Data  -   Link Collection -   Data Extraction
-1. Travel       -   True        -   Done            -   Done
-2. News         -   False       -   Done (Only Home)-   Done
-3. Capital      -   True        -   Done            -   Done
-4. Arts         -   False       -   Done (Some bugs)-   Not Done (some flaws)
-//*[div[@class='text--prose'] or h2]//*[not(descendant::blockquote) and
- not(ancestor-or-self::blockquote)]/text()
-
-5. Sport        -   False       -   Done (Only Home)-   Done
-6. Culture      -   True        -   Done            -   Done
-7. Weather      -   False       -   Done            -   Done
-8. Autos        -   True        -   Done            -   Done
-9. Food         --------------------------------------------------
-10. Future      -   True        -   Done            -   Done
-11. Earth       -   True        -   Done            -   Done"""
+"""
+Category Name   -   Link Collection -   Data Extraction
+1. Travel       -   Done            -   Done
+2. News         -   Done (Only Home)-   Done
+3. Capital      -   Done            -   Done
+4. Arts         -   Done (Some bugs)-   Not Done (some flaws)
+5. Sport        -   Done (Only Home)-   Done
+6. Culture      -   Done            -   Done
+7. Weather      -   Done            -   Done
+8. Autos        -   Done            -   Done
+9. Future       -   Done            -   Done
+10. Earth       -   Done            -   Done
+"""
 
 Author.objects.all().delete()
 Category.objects.all().delete()
 Article.objects.all().delete()
 
+
 def get_category(response, link):
     """get and return story's category from its url"""
 
     return response.urljoin(link).split("/")[3]
+
 
 def add_slash_if_not(url):
     """Add forward slash at the end of url if not present
@@ -74,6 +67,8 @@ def add_slash_if_not(url):
     if url[-1] != '/':
         return url + '/'
     return url
+
+
 class NewsSpider(scrapy.Spider):
     """
         parse() will parse the main homepage and gets categories link
@@ -106,8 +101,8 @@ class NewsSpider(scrapy.Spider):
             final_url = requests.request('HEAD', response.urljoin(link)).url
             # yield {'link':link}
             yield response.follow(final_url, callback=self.parse_category,
-                                  meta={'follow_next':True}
-                                 )
+                                  meta={'follow_next': True}
+                                  )
 
     def parse_category(self, response):
         """Parse category page for article links and issue request to
@@ -133,11 +128,12 @@ class NewsSpider(scrapy.Spider):
             for i in iterable:
                 # yield {'next':url.format(page_no=i)}
                 yield response.follow(url.format(page_no=i), callback=self.parse_category,
-                                      meta={'follow_next':False, 'url':url}
-                                     )
+                                      meta={'follow_next': False, 'url': url}
+                                      )
 
         elif response.url == 'https://www.bbc.com/weather':
-            article_links = response.xpath("//a[h3[contains(@class, 'title')]]/@href").extract()
+            article_links = response.xpath(
+                "//a[h3[contains(@class, 'title')]]/@href").extract()
 
         elif response.url == 'https://www.bbc.com/sport':
             article_links = response.xpath("""//article//
@@ -153,10 +149,11 @@ class NewsSpider(scrapy.Spider):
             print("Meow Meow", response.url)
 
         for link in article_links:
-            yield {'link':link}
+            yield {'link': link}
             yield response.follow(link, callback=self.parse_article,
-                                  meta={'category':get_category(response, link)}
-                                 )
+                                  meta={'category': get_category(
+                                      response, link)}
+                                  )
 
     def parse_article(self, response):
         """ Parses the given article to obtain article title,
@@ -173,9 +170,10 @@ class NewsSpider(scrapy.Spider):
             article_body = " ".join(response.xpath("""//div[@class='body-content']
                                                      //p[not(@class) and not(ancestor::blockquote)]
                                                      /text()""").extract())
-            #article_body = replace_escape_chars(remove_tags(article_body))
+            # article_body = replace_escape_chars(remove_tags(article_body))
 
-            article_title = response.xpath("//h1[@class='primary-heading']/text()").extract_first()
+            article_title = response.xpath(
+                "//h1[@class='primary-heading']/text()").extract_first()
 
             article_author = response.xpath("""//li[contains(@class,'source-attribution-author')]
                                                /span/text()""").extract_first()
@@ -202,7 +200,8 @@ class NewsSpider(scrapy.Spider):
                                               /h1[@class='story-body__h1']
                                               /text()""").extract_first()
 
-            article_author = response.xpath("//span[@class='byline__name']/text()").extract_first()
+            article_author = response.xpath(
+                "//span[@class='byline__name']/text()").extract_first()
 
             article_date = response.xpath("""//div[contains(@class, 'date')
                                                and
@@ -224,8 +223,9 @@ class NewsSpider(scrapy.Spider):
 
         if article_author:
             article_author = article_author.replace("By ", "")
-        Article.objects.abk_insert(article_title, article_category, article_author,
-                                   article_date, article_body)
+        Article.objects.abk_insert(article_title, article_category,
+                                   article_author, article_date,
+                                   article_body)
 
         # uncomment the following line if you want to save parsed articles in a file
         # yield {

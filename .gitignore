@@ -3,3 +3,9 @@
 bbcspider/output.txt
 bbcspider/news.jl
 bbcspider/news.json
+bbcspider/bbcspider/__pycache__/
+bbcspider/bbcspider/spiders/__pycache__/
+web/article_api/__pycache__/
+web/article_api/migrations/__pycache__/
+web/web/__pycache__/
+web/.idea/
