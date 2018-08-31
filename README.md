@@ -68,7 +68,7 @@ We provide the following services through our website
 7. Articles having a particular title **/articles/with/{title}**
 
 ### Examples
-**You need to run the server (as described in the usage section) to open these links otherwise they would result in error.**
+**You need to run the server (as described in the [usage](#usage) section) to open these links otherwise they would result in error.**
 1. [All Scraped Articles](http://127.0.0.1:8000/articles)
 2. [All Author whom articles we scrapped](http://127.0.0.1:8000/authors)
 3. [All Categories whome articles we scrapped](http://127.0.0.1:8000/categories)
