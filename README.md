@@ -67,15 +67,6 @@ We provide the following services through our website
 6. Articles published on a particular date **/articles/on/{date}**
 7. Articles having a particular title **/articles/with/{title}**
 
-### Examples
-**You need to run the server (as described in the [usage](#usage) section) to open these links otherwise they would result in error.**
-1. [All Scraped Articles](http://127.0.0.1:8000/articles)
-2. [All Author whom articles we scrapped](http://127.0.0.1:8000/authors)
-3. [All Categories whome articles we scrapped](http://127.0.0.1:8000/categories)
-3. [All Articles by person whose name contain Stephan](http://127.0.0.1:8000/articles/by/Stephen)
-4. [All Articles of Earth Category](http://127.0.0.1:8000/articles/of/earth)
-5. [All Articles published on 14 August 2018](http://127.0.0.1:8000/articles/on/14%20August%202018)
-6. [All Articles having China in their title](http://127.0.0.1:8000/articles/with/china)
 
 ## Contribution
 I am happy to incorporate any contribution in this project. Just make sure your code is formatted according to PEP8 conventions.
