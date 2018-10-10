@@ -1,7 +1,24 @@
+import sys
+import os
+
+from os.path import (dirname, abspath, join)
+import subprocess
+
 from rest_framework.response import Response
 from article_api.serializers import ArticleSerializer, AuthorSerializer, CategorySerializer
 from .models import Article, Author, Category
 from rest_framework.views import APIView
+from django.http import HttpResponse
+
+
+def scrape_bbc(request):
+    bbcspider_path = dirname(abspath(__file__))  # article_api
+    bbcspider_path = dirname(bbcspider_path)  # web
+    bbcspider_path = dirname(bbcspider_path)  # scrapy_django_project
+    bbcspider_path = join(bbcspider_path, "bbcspider")  # bbcspider
+
+    os.system("(cd {path} ; scrapy crawl news_spider)".format(path=bbcspider_path))
+    return HttpResponse("Done")
 
 
 class ArticleList(APIView):

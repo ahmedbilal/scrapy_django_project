@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from article_api.views import ArticleList, AuthorList, CategoryList
+from article_api.views import ArticleList, AuthorList, CategoryList,scrape_bbc
 from rest_framework.documentation import include_docs_urls
 
 urlpatterns = [
@@ -26,7 +26,7 @@ urlpatterns = [
     path('articles/of/<str:category>', ArticleList.as_view(_filter="by_category_name"), name='get_articles_by_category'),
     path('articles/on/<str:date>', ArticleList.as_view(_filter="by_date"), name='get_articles_by_date'),
     path('articles/with/<str:title>', ArticleList.as_view(_filter="by_title"), name='get_articles_by_title'),
-
+    path('scrape', scrape_bbc, name="scrape_bbc"),
     path('authors', AuthorList.as_view(), name='get_authors'),
     path('categories', CategoryList.as_view(), name='get_categories'),
 
