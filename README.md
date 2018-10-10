@@ -34,32 +34,25 @@ git clone https://github.com/ahmedbilal/scrapy_django_project.git
 cd scrapy_django_project
 ```
 ```bash
-pip install -r requirements.txt
+sudo pip3 install -r requirements.txt
 ```
 and you are **done**
 
 ## Usage
 To run the spider for crawling BBC's website. Enter the following commands on your terminal.
 ```bash
-cd bbcspider
-```
-```bash
-scrapy run news_spider
-```
-After the running above commands, your database would be filled with BBC's articles. To test the API enter the following commands on your terminal.
-```bash
-cd ../web
+cd web
 ```
 ```bash
 python manage.py runserver
 ```
-The website should be up and running at [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+Now go to [http://127.0.0.1:8000/scrape](http://127.0.0.1:8000/scrape). Soon, you will see "Done" as output. Your database would be filled with BBC's articles.
 
 ## API
 To read about services we provide through our API visit [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 We provide the following services through our website
-1. All Scrapped Articles @ **/articles**
+1. All Scrapped Articles  **/articles**
 2. All Authors of scrapped articles **/authors**
 3. All Categories of scrapped articles **/categories**
 4. Articles by a particular author **/articles/by/{author}**
